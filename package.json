@@ -1,0 +1,17 @@
+{
+  "name": "ai-council",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Ek sawaal, paanch free AI models ke jawab, ek neutral AI analysis — final faisla user ka.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": "18.x"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}

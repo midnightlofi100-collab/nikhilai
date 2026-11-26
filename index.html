@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI Council — Sab AI bolenge. Tum decide karoge.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0F1117;
+    --bg-raised:#171A23;
+    --bg-card:#1C202B;
+    --line:#2A2F3D;
+    --text:#E8EAF0;
+    --text-dim:#9499AB;
+    --gold:#E8B94B;
+
+    --c-gemini:#4C8BF5;
+    --c-gptoss:#F2A541;
+    --c-deepseek:#22A699;
+    --c-llama:#8B5CF6;
+    --c-qwen:#F0566A;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    line-height:1.5;
+  }
+  h1,h2,h3,.display{
+    font-family:'Space Grotesk',sans-serif;
+  }
+  .wrap{
+    max-width:980px;
+    margin:0 auto;
+    padding:48px 24px 96px;
+  }
+  .hero{
+    text-align:center;
+    margin-bottom:40px;
+  }
+  .hero h1{
+    font-size:clamp(28px,5vw,44px);
+    font-weight:700;
+    margin:0 0 12px;
+    letter-spacing:-0.01em;
+  }
+  .hero p{
+    color:var(--text-dim);
+    font-size:17px;
+    margin:0;
+    max-width:560px;
+    margin-inline:auto;
+  }
+  .ask-box{
+    background:var(--bg-raised);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:20px;
+    margin-bottom:40px;
+  }
+  .ask-box textarea{
+    width:100%;
+    background:transparent;
+    border:none;
+    outline:none;
+    resize:none;
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    font-size:16px;
+    min-height:64px;
+  }
+  .ask-box textarea::placeholder{color:var(--text-dim);}
+  .ask-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:8px;
+    border-top:1px solid var(--line);
+    padding-top:14px;
+  }
+  .panel-hint{color:var(--text-dim);font-size:13px;}
+  button.ask-btn{
+    background:var(--gold);
+    color:#201703;
+    border:none;
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:600;
+    font-size:15px;
+    padding:10px 22px;
+    border-radius:10px;
+    cursor:pointer;
+    transition:transform .15s ease, opacity .15s ease;
+  }
+  button.ask-btn:hover{transform:translateY(-1px);}
+  button.ask-btn:disabled{opacity:.5;cursor:default;transform:none;}
+
+  .panels{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));
+    gap:16px;
+    margin-bottom:28px;
+  }
+  .panel-card{
+    background:var(--bg-card);
+    border:1px solid var(--line);
+    border-left:4px solid var(--accent, var(--line));
+    border-radius:12px;
+    padding:18px;
+    min-height:140px;
+    display:flex;
+    flex-direction:column;
+  }
+  .panel-head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:10px;
+  }
+  .panel-name{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:600;
+    font-size:15px;
+  }
+  .panel-sub{
+    font-size:11px;
+    color:var(--text-dim);
+  }
+  .panel-body{
+    font-size:14px;
+    color:var(--text);
+    white-space:pre-wrap;
+    flex:1;
+  }
+  .panel-body.loading{color:var(--text-dim);}
+  .panel-body.err{color:#F0566A;}
+  .vote-btn{
+    margin-top:14px;
+    align-self:flex-start;
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--text-dim);
+    font-family:'Inter',sans-serif;
+    font-size:13px;
+    padding:6px 14px;
+    border-radius:20px;
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .vote-btn:hover{border-color:var(--accent); color:var(--text);}
+  .vote-btn.voted{
+    background:var(--accent);
+    border-color:var(--accent);
+    color:#0F1117;
+    font-weight:600;
+  }
+
+  .verdict{
+    background:linear-gradient(180deg, rgba(232,185,75,.08), transparent);
+    border:1px solid rgba(232,185,75,.35);
+    border-radius:14px;
+    padding:22px;
+    margin-bottom:28px;
+  }
+  .verdict h3{
+    margin:0 0 10px;
+    font-size:16px;
+    color:var(--gold);
+  }
+  .verdict-body{
+    font-size:14px;
+    white-space:pre-wrap;
+    color:var(--text);
+  }
+
+  .tally{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    font-size:13px;
+    color:var(--text-dim);
+  }
+  .tally span.chip{
+    background:var(--bg-card);
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:4px 12px;
+  }
+
+  .empty-state{
+    text-align:center;
+    color:var(--text-dim);
+    font-size:14px;
+    padding:40px 0;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <h1>Sab AI bolenge. Tum decide karoge.</h1>
+    <p>Ek sawaal poocho — Gemini, GPT-OSS, DeepSeek, Llama aur Qwen sab apna apna jawab denge. Neeche ek AI analysis bhi milega, lekin final faisla tumhara.</p>
+  </div>
+
+  <div class="ask-box">
+    <textarea id="question" placeholder="Apna sawaal yahan likho..."></textarea>
+    <div class="ask-row">
+      <span class="panel-hint" id="hint">5 free AI models se jawab aayega</span>
+      <button class="ask-btn" id="askBtn">Sabse Poocho</button>
+    </div>
+  </div>
+
+  <div class="panels" id="panels"></div>
+
+  <div class="verdict" id="verdictBox" style="display:none;">
+    <h3>AI Analysis</h3>
+    <div class="verdict-body" id="verdictBody"></div>
+  </div>
+
+  <div class="tally" id="tally"></div>
+
+</div>
+
+<script>
+const MODELS = [
+  { id:"gemini",   name:"Gemini 2.5 Flash", sub:"Google", color:"var(--c-gemini)" },
+  { id:"gptoss",   name:"GPT-OSS 20B",      sub:"OpenAI (open-weight)", color:"var(--c-gptoss)" },
+  { id:"deepseek", name:"DeepSeek V3.1",    sub:"DeepSeek", color:"var(--c-deepseek)" },
+  { id:"llama",    name:"Llama 3.3 70B",    sub:"Meta", color:"var(--c-llama)" },
+  { id:"qwen",     name:"Qwen 2.5 72B",     sub:"Alibaba", color:"var(--c-qwen)" },
+];
+
+const panelsEl = document.getElementById('panels');
+const askBtn = document.getElementById('askBtn');
+const questionEl = document.getElementById('question');
+const verdictBox = document.getElementById('verdictBox');
+const verdictBody = document.getElementById('verdictBody');
+const tallyEl = document.getElementById('tally');
+
+let votes = JSON.parse(localStorage.getItem('ai_council_votes') || '{}');
+let currentAnswers = {};
+
+function renderEmptyPanels(){
+  panelsEl.innerHTML = MODELS.map(m => `
+    <div class="panel-card" style="--accent:${m.color}" data-model="${m.id}">
+      <div class="panel-head">
+        <span class="panel-name">${m.name}</span>
+        <span class="panel-sub">${m.sub}</span>
+      </div>
+      <div class="panel-body" id="body-${m.id}">Sawaal poocho, jawab yahan aayega.</div>
+    </div>
+  `).join('');
+  renderTally();
+}
+
+function renderTally(){
+  const entries = Object.entries(votes);
+  if(!entries.length){ tallyEl.innerHTML = ''; return; }
+  tallyEl.innerHTML = '<strong style="color:var(--text);margin-right:4px;">Ab tak ke votes:</strong>' +
+    entries.map(([id,count]) => {
+      const m = MODELS.find(x=>x.id===id);
+      return `<span class="chip">${m ? m.name : id}: ${count}</span>`;
+    }).join('');
+}
+
+function vote(modelId){
+  votes[modelId] = (votes[modelId]||0) + 1;
+  localStorage.setItem('ai_council_votes', JSON.stringify(votes));
+  document.querySelectorAll('.vote-btn').forEach(b=>b.classList.remove('voted'));
+  const btn = document.querySelector(`.vote-btn[data-model="${modelId}"]`);
+  if(btn) btn.classList.add('voted');
+  renderTally();
+}
+
+async function askAll(){
+  const question = questionEl.value.trim();
+  if(!question) return;
+
+  askBtn.disabled = true;
+  askBtn.textContent = 'Poochh raha hoon...';
+  verdictBox.style.display = 'none';
+  currentAnswers = {};
+
+  MODELS.forEach(m=>{
+    const el = document.getElementById(`body-${m.id}`);
+    el.textContent = 'Soch raha hai...';
+    el.className = 'panel-body loading';
+  });
+  // remove old vote buttons
+  document.querySelectorAll('.vote-btn').forEach(b=>b.remove());
+
+  try{
+    const res = await fetch('/api/ask', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ question })
+    });
+    const data = await res.json();
+
+    MODELS.forEach(m=>{
+      const el = document.getElementById(`body-${m.id}`);
+      const result = data.results ? data.results[m.id] : null;
+      if(result && result.ok){
+        el.textContent = result.text;
+        el.className = 'panel-body';
+        currentAnswers[m.id] = result.text;
+        const card = document.querySelector(`.panel-card[data-model="${m.id}"]`);
+        const btn = document.createElement('button');
+        btn.className = 'vote-btn';
+        btn.setAttribute('data-model', m.id);
+        btn.textContent = 'Best Answer 👍';
+        btn.onclick = () => vote(m.id);
+        card.appendChild(btn);
+      } else {
+        el.textContent = (result && result.error) || 'Ye model abhi jawab nahi de paaya.';
+        el.className = 'panel-body err';
+      }
+    });
+
+    askBtn.disabled = false;
+    askBtn.textContent = 'Sabse Poocho';
+
+    // fetch judge analysis separately so a slow judge doesn't block panel display
+    if(Object.keys(currentAnswers).length >= 2){
+      verdictBox.style.display = 'block';
+      verdictBody.textContent = 'Analysis ban raha hai...';
+      const jres = await fetch('/api/judge', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ question, answers: currentAnswers })
+      });
+      const jdata = await jres.json();
+      verdictBody.textContent = jdata.ok ? jdata.text : 'Analysis abhi available nahi hai.';
+    }
+  } catch(e){
+    MODELS.forEach(m=>{
+      const el = document.getElementById(`body-${m.id}`);
+      el.textContent = 'Connection error.';
+      el.className = 'panel-body err';
+    });
+    askBtn.disabled = false;
+    askBtn.textContent = 'Sabse Poocho';
+  }
+}
+
+askBtn.addEventListener('click', askAll);
+questionEl.addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter' && (e.metaKey || e.ctrlKey)) askAll();
+});
+
+renderEmptyPanels();
+</script>
+</body>
+</html>
